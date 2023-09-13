@@ -39,12 +39,14 @@ async function main() {
     app.listen(port, () => console.log(`Unoffical Engage API now running on port ${port}.`));
 
     console.log("Running first check.");
-    await scraper.getEvents({});
+    let data = await scraper.getEvents({});
+    await dataHandler.insertEvents(data);
+    console.log("First check ran succesfully.");
 
-    setInterval(async () => {
-        console.log("Interval started.");
-        await scraper.getEvents({});
-    }, 1000 * 60 * 5);
+    // setInterval(async () => {
+    //     console.log("Interval started.");
+    //     await scraper.getEvents({});
+    // }, 1000 * 60 * 5);
 }
 
 main();

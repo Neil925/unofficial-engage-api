@@ -49,7 +49,7 @@ export default class DatabaseHander {
                     await this.db.run(SQL`INSERT INTO clubs ("club_id") VALUES (${club.club_id})`);
                 }
 
-                await this.db.run(SQL`INSERT INTO events_has_clubs ("events_id", "club_id") VALUES (${event.id}, ${club})`);
+                await this.db.run(SQL`INSERT INTO events_has_clubs ("events_id", "club_id") VALUES (${event.id}, ${club.club_id})`);
             }
         }
     }
@@ -59,6 +59,7 @@ export default class DatabaseHander {
 
         for (let event of result) {
             event.clubs = [];
+            console.debug(await this.db.get(SQL`SELECT * FROM clubs INNER JOIN events_has_clubs on events_has_clubs.club_id = clubs.club_id WHERE events_has_clubs.events_id = ${event.id}`));
             event.clubs.push(await this.db.get(SQL`SELECT * FROM clubs INNER JOIN events_has_clubs on events_has_clubs.club_id = clubs.club_id WHERE events_has_clubs.events_id = ${event.id}`));
             console.debug(event.clubs);
         }
