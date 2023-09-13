@@ -1,5 +1,5 @@
 import puppeteer from 'puppeteer';
-import { EventData, RequestBody } from '../types.js';
+import { Club, EventData, RequestBody } from '../types.js';
 
 export default class EngageScraper {
     browser: puppeteer.Browser;
@@ -26,7 +26,11 @@ export default class EngageScraper {
 
         await this.page.waitForSelector('a');
 
-        return this.collectEventdata();
+        let result = this.collectEventdata();
+
+        
+
+        return result;
     }
 
     private async collectEventdata() {
@@ -63,12 +67,12 @@ export default class EngageScraper {
             let date = Date.parse(dateString);
             let location = await svgs[1].evaluate(x => x.parentElement.textContent);
 
-            let club: string;
+            let club: Club;
 
             if (svgs.length == 3)
-                club = "Miltiple Hosts";
+                club.club_id = "Miltiple Hosts";
             else
-                club = await element.$eval("img", x => x.parentElement.lastChild.textContent);
+                club.club_id = await element.$eval("img", x => x.parentElement.lastChild.textContent);
 
             let newData: EventData = {
                 id: id,
@@ -76,10 +80,9 @@ export default class EngageScraper {
                 title: title,
                 date: date,
                 location: location,
-                club: club
+                clubs: [club]
             }
 
-            console.debug(newData);
             result.push(newData);
         }
 

@@ -2,9 +2,15 @@
     "compilerOptions": {
         "module": "NodeNext",
         "moduleResolution": "NodeNext",
-        "target": "ES2020",
+        "target": "ESNext",
         "sourceMap": true,
         "outDir": "dist",
+        "inlineSources": true
     },
-    "include": ["src/**/*"]
+    "include": [
+        "src/**/*"
+    ],
+    "ts-node": {
+        "esm": true
+    }
 }

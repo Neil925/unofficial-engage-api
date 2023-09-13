@@ -6,9 +6,22 @@ export interface RequestBody {
 
 export interface EventData {
     id: number,
-    img: string,
     title: string,
     date: number,
     location: string,
-    club: string
+    img: string,
+    clubs: Club[]
+}
+
+export interface Club {
+    club_id: string,
+    club_name?: string
+}
+
+export interface EventsTable {
+    id: number,
+    title: string,
+    date: number,
+    location: string,
+    img: string
 }
