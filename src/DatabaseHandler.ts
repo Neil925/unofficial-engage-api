@@ -60,6 +60,7 @@ export default class DatabaseHander {
         for (let event of result) {
             event.clubs = [];
             event.clubs.push(await this.db.get(SQL`SELECT * FROM clubs INNER JOIN events_has_clubs on events_has_clubs.club_id = clubs.club_id WHERE events_has_clubs.events_id = ${event.id}`));
+            console.debug(event.clubs);
         }
 
         return result;

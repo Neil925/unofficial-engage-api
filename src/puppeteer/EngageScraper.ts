@@ -6,19 +6,23 @@ export default class EngageScraper {
     page: puppeteer.Page;
     url = "https://valenciacollege.campuslabs.com";
 
-    public async initialize(): Promise<boolean> {
+    public async startBrowser() {
         try {
             this.browser = await puppeteer.launch({ headless: true });
             this.page = await this.browser.newPage();
-            console.log("Engage scraper intialized succesfully.");
-            return true;
         } catch (error) {
-            console.error(`Scraper initialization failed: ${error}`);
-            return false;
+            throw new Error(`Scraper initialization failed: ${error}`);
         }
+
+        console.log("Engage scraper started succesfully.");
     }
 
     public async getEvents(req: RequestBody, club?: string) {
+        console.log("Now pulling data.");
+        
+        if (!this.page)
+            await this.startBrowser();
+
         if (club)
             await this.page.goto(`${this.url}/engage/organization/${club}/events`);
         else
@@ -26,9 +30,7 @@ export default class EngageScraper {
 
         await this.page.waitForSelector('a');
 
-        let result = this.collectEventdata();
-
-        
+        let result = await this.collectEventdata();
 
         return result;
     }
@@ -67,7 +69,7 @@ export default class EngageScraper {
             let date = Date.parse(dateString);
             let location = await svgs[1].evaluate(x => x.parentElement.textContent);
 
-            let club: Club;
+            let club: Club = { club_id: "", club_name: "" };
 
             if (svgs.length == 3)
                 club.club_id = "Miltiple Hosts";

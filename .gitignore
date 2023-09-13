@@ -92,3 +92,4 @@ dist/
 config.json
 
 *.db
+database.db-journal

@@ -10,11 +10,10 @@ async function main() {
     const scraper = new EngageScraper();
     const dataHandler = new DatabaseHander();
 
-    // if (!await scraper.initialize())
-    //     throw Error("Scraper initilization failed.");
-
     if (!await dataHandler.initialize())
         throw Error("Database initilization failed.");
+
+    console.log("Database initialized succesfully.");
 
     app.use(express.json()) // for parsing application/json
     app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
@@ -38,7 +37,14 @@ async function main() {
     app.get('/:club/members', async (req, res) => res.send("Work in progres"));
 
     app.listen(port, () => console.log(`Unoffical Engage API now running on port ${port}.`));
-}
 
+    console.log("Running first check.");
+    await scraper.getEvents({});
+
+    setInterval(async () => {
+        console.log("Interval started.");
+        await scraper.getEvents({});
+    }, 1000 * 60 * 5);
+}
 
 main();
