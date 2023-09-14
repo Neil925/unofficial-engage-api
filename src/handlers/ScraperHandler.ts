@@ -113,8 +113,6 @@ export default class ScraperHandler {
             event.clubs.push(club);
         }
 
-        console.debug(event);
-
         return event;
     }
 }

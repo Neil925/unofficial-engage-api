@@ -45,7 +45,6 @@ export default class DatabaseHander {
     public async insertEvents(data: EventData[]) {
         console.log(`Inserting ${data.length} events to database.`);
         for (const event of data) {
-            console.debug(`The id: ${event.id}`);
             await this.db.run(SQL`INSERT INTO events ("id", "title", "date", "location", "img") VALUES (${event.id}, ${event.title}, ${event.date} , ${event.location}, ${event.img})`);
 
             for (const club of event.clubs) {
