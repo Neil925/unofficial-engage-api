@@ -1,13 +1,13 @@
 //before and after are UTC SECONDS.
 export interface RequestBody {
-    after?: number,
-    before?: number
+    after?: Date,
+    before?: Date
 }
 
 export interface EventData {
     id: number,
     title: string,
-    date: number,
+    date: Date,
     location: string,
     img: string,
     clubs: Club[]
@@ -16,12 +16,4 @@ export interface EventData {
 export interface Club {
     club_id: string,
     club_name?: string
-}
-
-export interface EventsTable {
-    id: number,
-    title: string,
-    date: number,
-    location: string,
-    img: string
 }

@@ -1,12 +1,14 @@
 import sqlite3 from 'sqlite3';
 import { Database, ISqlite, open } from 'sqlite';
 import sqlTemplateString from 'sql-template-strings';
-import { EventData, RequestBody } from './types.js';
+import { EventData, RequestBody } from '../types.js';
 import fs from 'fs';
 
 const SQL = sqlTemplateString.default;
 
 export default class DatabaseHander {
+    public static singelton: DatabaseHander;
+
     db: Database<sqlite3.Database, sqlite3.Statement>;
     protected dataSql = fs.readFileSync('EngageDbFE.sql').toString();
 
@@ -41,7 +43,9 @@ export default class DatabaseHander {
     }
 
     public async insertEvents(data: EventData[]) {
+        console.log(`Inserting ${data.length} events to database.`);
         for (const event of data) {
+            console.debug(`The id: ${event.id}`);
             await this.db.run(SQL`INSERT INTO events ("id", "title", "date", "location", "img") VALUES (${event.id}, ${event.title}, ${event.date} , ${event.location}, ${event.img})`);
 
             for (const club of event.clubs) {
@@ -59,11 +63,13 @@ export default class DatabaseHander {
 
         for (let event of result) {
             event.clubs = [];
-            console.debug(await this.db.get(SQL`SELECT * FROM clubs INNER JOIN events_has_clubs on events_has_clubs.club_id = clubs.club_id WHERE events_has_clubs.events_id = ${event.id}`));
             event.clubs.push(await this.db.get(SQL`SELECT * FROM clubs INNER JOIN events_has_clubs on events_has_clubs.club_id = clubs.club_id WHERE events_has_clubs.events_id = ${event.id}`));
-            console.debug(event.clubs);
         }
 
         return result;
+    }
+
+    public async getIds(): Promise<any[]> {
+        return await this.db.all(`SELECT id FROM events`);
     }
 }
