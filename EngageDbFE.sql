@@ -50,3 +50,11 @@ CREATE TABLE IF NOT EXISTS `club_roster` (
   CONSTRAINT `fk_club_roster_clubs1`
     FOREIGN KEY (`club_id`)
     REFERENCES `clubs` (`club_id`));
+
+CREATE VIEW EVENTS_VIEW AS
+SELECT events.*,
+       json_group_array(json_object('club_id', clubs.club_id, 'club_name', clubs.club_name)) AS clubs
+FROM events
+LEFT JOIN events_has_clubs AS e ON e.events_id = events.id
+LEFT JOIN clubs ON clubs.club_id = e.club_id
+GROUP BY events.id;

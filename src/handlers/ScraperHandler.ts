@@ -9,7 +9,7 @@ export default class ScraperHandler {
 
     public async startBrowser() {
         try {
-            this.browser = await puppeteer.launch({ headless: true });
+            this.browser = await puppeteer.launch({ headless: "new" });
             this.page = await this.browser.newPage();
         } catch (error) {
             throw new Error(`Scraper initialization failed: ${error}`);
@@ -45,6 +45,8 @@ export default class ScraperHandler {
 
         await this.browser.close();
         this.page = null;
+
+        console.log(result);
 
         return result;
     }
@@ -107,9 +109,9 @@ export default class ScraperHandler {
 
             let club: Club = {
                 club_id: href.match(/(?<=organization\/).*/gm)[0],
-                club_name: await el.$eval('div > h3', x => x.textContent.trim())
+                club_name: await el.$eval('h3', x => x.textContent.trim())
             };
-
+            
             event.clubs.push(club);
         }
 

@@ -49,7 +49,7 @@ export default class DatabaseHander {
 
             for (const club of event.clubs) {
                 if (!await this.db.get(SQL`SELECT * FROM clubs WHERE club_id = ${club.club_id}`)) {
-                    await this.db.run(SQL`INSERT INTO clubs ("club_id") VALUES (${club.club_id})`);
+                    await this.db.run(SQL`INSERT INTO clubs ("club_id", "club_name") VALUES (${club.club_id}, ${club.club_name})`);
                 }
 
                 await this.db.run(SQL`INSERT INTO events_has_clubs ("events_id", "club_id") VALUES (${event.id}, ${club.club_id})`);
@@ -58,14 +58,12 @@ export default class DatabaseHander {
     }
 
     public async queryEvents(request: RequestBody, club?: string): Promise<EventData[]> {
-        let result = await this.db.all("SELECT * FROM events") as EventData[];
+        let result = await this.db.all("SELECT * FROM EVENTS_VIEW");
 
-        for (let event of result) {
-            event.clubs = [];
-            event.clubs.push(await this.db.get(SQL`SELECT * FROM clubs INNER JOIN events_has_clubs on events_has_clubs.club_id = clubs.club_id WHERE events_has_clubs.events_id = ${event.id}`));
-        }
+        for (const event of result)
+            event.clubs = JSON.parse(event.clubs);
 
-        return result;
+        return result as EventData[];
     }
 
     public async getIds(): Promise<any[]> {
