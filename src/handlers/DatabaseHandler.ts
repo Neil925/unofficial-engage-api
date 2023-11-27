@@ -6,18 +6,33 @@ import fs from 'fs';
 
 const SQL = sqlTemplateString.default;
 
+/**
+ * DatabaseHandler class for managing interactions with SQLite database.
+ */
 export default class DatabaseHander {
-    //A shared instance of itself for convinient access throughout the project.
+    /**
+     * A shared instance of DatabaseHandler for convenient access throughout the project.
+     * @type {DatabaseHander}
+     */
     public static singelton: DatabaseHander;
 
-    //The SQLite database.
+    /**
+     * The SQLite database.
+     * @type {Database<sqlite3.Database, sqlite3.Statement>}
+     */
     private db: Database<sqlite3.Database, sqlite3.Statement>;
-    //The text content of the SQL file that automatically constructs the data structure.
+    /**
+     * The text content of the SQL file that automatically constructs the data structure.
+     * @type {string}
+     */
     protected dataSql = fs.readFileSync('EngageDbFE.sql').toString();
 
-    //Creates the .sql file if it does not exist already. The database is constructued from the
-    //EngageDbFE.sql file contents stored in the dataSql variable.
-    //If the database already exists, then it will just open it for reading and writing.
+    /**
+     * Creates the .sql file if it does not exist already. The database is constructed from the
+     * EngageDbFE.sql file contents stored in the dataSql variable.
+     * If the database already exists, then it will just open it for reading and writing.
+     * @returns {Promise<boolean>} True if initialization is successful, false otherwise.
+     */
     public async initialize(): Promise<boolean> {
         try {
             if (fs.existsSync('./database.db')) {
@@ -48,7 +63,10 @@ export default class DatabaseHander {
         return true;
     }
 
-    //Inserts events into the database in mass only.
+     /**
+     * Inserts events into the database in bulk.
+     * @param {EventData[]} data - An array of EventData objects to be inserted.
+     */
     public async insertEvents(data: EventData[]) {
         console.log(`Inserting ${data.length} events to database.`);
         for (const event of data) {
@@ -64,7 +82,12 @@ export default class DatabaseHander {
         }
     }
 
-    //Returns events from database to be served to the user.
+    /**
+     * Returns events from the database to be served to the user.
+     * @param {RequestBody} request - The request body.
+     * @param {string} [club] - The optional club parameter.
+     * @returns {Promise<EventData[]>} An array of event data.
+     */
     public async queryEvents(request: RequestBody, club?: string): Promise<EventData[]> {
         let query = SQL`SELECT * FROM EVENTS_VIEW`;
 
@@ -99,7 +122,10 @@ export default class DatabaseHander {
         return result as EventData[];
     }
 
-    //Gets only the IDs of all events. Used to filterfor already collected events.
+    /**
+     * Gets only the IDs of all events. Used to filter for already collected events.
+     * @returns {Promise<any[]>} An array of event IDs.
+     */
     public async getIds(): Promise<any[]> {
         return await this.db.all(`SELECT id FROM events`);
     }

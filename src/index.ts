@@ -4,7 +4,10 @@ import EngageScraper from './handlers/ScraperHandler.js';
 import DatabaseHander from './handlers/DatabaseHandler.js';
 import TaskQueueHandler from './handlers/TaskQueueHandler.js';
 
-//The application starts here. All needed variables are initialized and API paths defined.
+/**
+ * The main function that starts the application.
+ * Initializes all necessary variables and defines API paths.
+ */
 async function main() {
     const app = express();
     const port = 3000;
@@ -33,6 +36,11 @@ async function main() {
     app.use(express.json()) // for parsing application/json
     app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 
+    /**
+     * Express route to return all events in the database.
+     * @param {object} req - Express request object.
+     * @param {object} res - Express response object.
+     */
     app.get('/events', async (req, res) => {
         if (req.pastEvents) {
             res.status(500).send("Past event checking is only valid for club routes!");
@@ -47,10 +55,25 @@ async function main() {
         next();
     });
 
+    /**
+     * Express route to retrieve all events for a specific club.
+     * @param {object} req - Express request object.
+     * @param {object} res - Express response object.
+     */
     app.get('/:club/events', async (req, res) => res.send(await dataHandler.queryEvents(req.body, req.club)));
 
+    /**
+     * Express route to retrieve all members for a specific club. (discontinued)
+     * @param {object} req - Express request object.
+     * @param {object} res - Express response object.
+     */
     app.get('/:club/members', async (req, res) => res.send("Discontinued"));
 
+    /**
+     * Express route to run scraper and store events in database.
+     * @param {object} req - Express request object.
+     * @param {object} res - Express response object.
+     */
     app.post('/prep/events', async (req, res) => {
         if (req.body.pastEvents) {
             res.status(500).send("Past event checking is only valid for club routes!");
@@ -66,6 +89,11 @@ async function main() {
         });
     });
 
+    /**
+     * Express route to run scraper and store events in database for a specific club.
+     * @param {object} req - Express request object.
+     * @param {object} res - Express response object.
+     */
     app.post('/prep/:club/events', async (req, res) => {
         res.send("Club event data collection will now start.");
         console.log("Running club events prep.");
@@ -79,11 +107,17 @@ async function main() {
         });
     });
 
+    /**
+     * Starts the express application.
+     */
     app.listen(port, () => console.log(`Unoffical Engage API now running on port ${port}.`));
 
     if (refresh == -1)
         return;
 
+    /**
+     * Sets interval for scraper refresh.
+     */
     setInterval(async () => {
         console.log("Interval check started.");
         await scraper.getEvents({});

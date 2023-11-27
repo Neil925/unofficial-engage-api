@@ -3,17 +3,36 @@ import { Club, EventData, RequestBody } from '../types.js';
 import DatabaseHander from './DatabaseHandler.js';
 import delay from '../helpers/delay.js';
 
+/**
+ * ScraperHandler class for pulling events from Engage using Puppeteer.
+ */
 export default class ScraperHandler {
-    //Instance of a puppeteer browser.
+    /**
+     * Instance of a Puppeteer browser.
+     * @type {puppeteer.Browser}
+     */
     private browser: puppeteer.Browser;
-    //The main Browser Page
+    /**
+     * The main browser page.
+     * @type {puppeteer.Page}
+     */
     private page: puppeteer.Page;
+    /**
+     * The base URL for the Engage website.
+     * @type {string}
+     */
     private readonly url = "https://valenciacollege.campuslabs.com/engage";
     
-    //A shared instance of itself for convinient access throughout the project.
+    /**
+     * A shared instance of ScraperHandler for convenient access throughout the project.
+     * @type {ScraperHandler}
+     */
     public static singelton: ScraperHandler;
 
-    //Starts the puppeteer browser
+    /**
+     * Starts the Puppeteer browser.
+     * @throws {Error} Throws an error if Scraper initialization fails.
+     */
     public async startBrowser() {
         try {
             this.browser = await puppeteer.launch({ headless: "new" });
@@ -25,13 +44,20 @@ export default class ScraperHandler {
         console.log("Engage scraper started succesfully.");
     }
 
-    //Closes the puppeteer browser
+    /**
+     * Closes the Puppeteer browser.
+     */
     public async closeBrowser() {
         await this.browser.close();
         this.page = null;
     }
 
-    //Gets the events requested or the generic future events that auto refresh.
+    /**
+     * Gets the events requested or the generic future events that auto refresh.
+     * @param {RequestBody} req - The request body.
+     * @param {string} [club] - The optional club parameter.
+     * @returns {Promise<EventData[]>} An array of event data.
+     */
     public async getEvents(req: RequestBody, club?: string) {
         console.log("Getting events...");
 
@@ -71,7 +97,11 @@ export default class ScraperHandler {
         return result;
     }
 
-    //Filters for the event html elements that actually need to be checked.
+    /**
+     * Filters for the event HTML elements that actually need to be checked.
+     * @returns {Promise<number[]>} An array of event IDs that need to be checked.
+     * @private
+     */
     private async needsCheck() {
         const elements = await this.page.$$("a");
         const ids = await DatabaseHander.singelton.getIds();
@@ -92,7 +122,12 @@ export default class ScraperHandler {
         return result;
     }
 
-    //Collects data from a single event.
+    /**
+     * Collects data from a single event.
+     * @param {number} id - The ID of the event.
+     * @returns {Promise<EventData>} The event data.
+     * @private
+     */
     private async checkEvent(id: number): Promise<EventData> {
         var event: EventData = {
             id: id,
