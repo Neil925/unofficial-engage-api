@@ -7,11 +7,17 @@ import fs from 'fs';
 const SQL = sqlTemplateString.default;
 
 export default class DatabaseHander {
+    //A shared instance of itself for convinient access throughout the project.
     public static singelton: DatabaseHander;
 
-    db: Database<sqlite3.Database, sqlite3.Statement>;
+    //The SQLite database.
+    private db: Database<sqlite3.Database, sqlite3.Statement>;
+    //The text content of the SQL file that automatically constructs the data structure.
     protected dataSql = fs.readFileSync('EngageDbFE.sql').toString();
 
+    //Creates the .sql file if it does not exist already. The database is constructued from the
+    //EngageDbFE.sql file contents stored in the dataSql variable.
+    //If the database already exists, then it will just open it for reading and writing.
     public async initialize(): Promise<boolean> {
         try {
             if (fs.existsSync('./database.db')) {
@@ -33,7 +39,7 @@ export default class DatabaseHander {
                 driver: sqlite3.Database
             });
 
-            this.db.exec(this.dataSql);
+            await this.db.exec(this.dataSql);
         } catch (error) {
             console.error(error);
             return false;
@@ -42,10 +48,11 @@ export default class DatabaseHander {
         return true;
     }
 
+    //Inserts events into the database in mass only.
     public async insertEvents(data: EventData[]) {
         console.log(`Inserting ${data.length} events to database.`);
         for (const event of data) {
-            await this.db.run(SQL`INSERT INTO events ("id", "title", "date", "location", "img") VALUES (${event.id}, ${event.title}, ${event.date} , ${event.location}, ${event.img})`);
+            await this.db.run(SQL`INSERT INTO events ("id", "title", "event_date", "location", "img") VALUES (${event.id}, ${event.title}, ${event.date} , ${event.location}, ${event.img})`);
 
             for (const club of event.clubs) {
                 if (!await this.db.get(SQL`SELECT * FROM clubs WHERE club_id = ${club.club_id}`)) {
@@ -57,8 +64,34 @@ export default class DatabaseHander {
         }
     }
 
+    //Returns events from database to be served to the user.
     public async queryEvents(request: RequestBody, club?: string): Promise<EventData[]> {
-        let result = await this.db.all("SELECT * FROM EVENTS_VIEW");
+        let query = SQL`SELECT * FROM EVENTS_VIEW`;
+
+        let cond = 0;
+
+        cond += club ? 1 : 0;
+        cond += request.after ? 1 : 0;
+        cond += request.before ? 1 : 0;
+
+        query.append(`${cond ? " WHERE " : ';'}`);
+
+        if (club)
+            query.append(`EXISTS (SELECT 1 FROM json_each(clubs) WHERE json_each.value LIKE '%${club}%')`);
+
+        query.append(`${cond > 1 ? ' AND ' : ''}`);
+        
+        if (request.after)
+        query.append(`event_date > ${request.after}`);
+
+        query.append(`${request.before ? " AND " : ';'}`);
+
+        if (request.before)
+            query.append(`event_date < ${request.before};`);
+
+        console.log(query);
+
+        let result = await this.db.all(query);
 
         for (const event of result)
             event.clubs = JSON.parse(event.clubs);
@@ -66,6 +99,7 @@ export default class DatabaseHander {
         return result as EventData[];
     }
 
+    //Gets only the IDs of all events. Used to filterfor already collected events.
     public async getIds(): Promise<any[]> {
         return await this.db.all(`SELECT id FROM events`);
     }

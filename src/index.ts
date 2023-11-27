@@ -1,20 +1,28 @@
 import express from 'express';
-import EngageScraper from './handlers/ScraperHandler.js';
-import { RequestBody } from './types.js';
-import DatabaseHander from './handlers/DatabaseHandler.js';
 import 'dotenv/config';
+import EngageScraper from './handlers/ScraperHandler.js';
+import DatabaseHander from './handlers/DatabaseHandler.js';
+import TaskQueueHandler from './handlers/TaskQueueHandler.js';
 
+//The application starts here. All needed variables are initialized and API paths defined.
 async function main() {
     const app = express();
     const port = 3000;
 
+    //Initialize Handlers
+    EngageScraper.singelton = new EngageScraper();
     const scraper = new EngageScraper();
+
+    TaskQueueHandler.singelton = new TaskQueueHandler();
+    const taskQueue = TaskQueueHandler.singelton;
+
     DatabaseHander.singelton = new DatabaseHander();
     const dataHandler = DatabaseHander.singelton;
+    //End Intiialize Handlers
 
     const refresh = Number.parseInt(process.env.REFRESH_PER_DAY);
 
-    if (!refresh)
+    if (!refresh || (refresh != -1 && (refresh < 0 || refresh > 48)))
         throw new Error(`REFRESH_PER_DAY value of ${process.env.REFRESH_PER_DAY} is invalid.`);
 
     if (!await dataHandler.initialize())
@@ -25,7 +33,14 @@ async function main() {
     app.use(express.json()) // for parsing application/json
     app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 
-    app.get('/events', async (req, res) => res.send(await dataHandler.queryEvents(req.body)));
+    app.get('/events', async (req, res) => {
+        if (req.pastEvents) {
+            res.status(500).send("Past event checking is only valid for club routes!");
+            return;
+        }
+
+        res.send(await dataHandler.queryEvents(req.body))
+    });
 
     app.param('club', (req, res, next, value) => {
         req.club = value;
@@ -34,14 +49,40 @@ async function main() {
 
     app.get('/:club/events', async (req, res) => res.send(await dataHandler.queryEvents(req.body, req.club)));
 
-    app.get('/:club/members', async (req, res) => res.send("Work in progres"));
+    app.get('/:club/members', async (req, res) => res.send("Discontinued"));
+
+    app.post('/prep/events', async (req, res) => {
+        if (req.body.pastEvents) {
+            res.status(500).send("Past event checking is only valid for club routes!");
+            return;
+        }
+
+        res.send("Event data collection will now start.");
+        console.log("Running events prep.");
+
+        taskQueue.addToQueue(async () => {
+            let data = await scraper.getEvents(req.body);
+            await dataHandler.insertEvents(data);
+        });
+    });
+
+    app.post('/prep/:club/events', async (req, res) => {
+        res.send("Club event data collection will now start.");
+        console.log("Running club events prep.");
+
+        if (req.body.pastEvents)
+            console.log(`Checking for ${req.club}'s past events.`);
+
+        taskQueue.addToQueue(async () => {
+            let data = await scraper.getEvents(req.body, req.club);
+            await dataHandler.insertEvents(data);
+        });
+    });
 
     app.listen(port, () => console.log(`Unoffical Engage API now running on port ${port}.`));
 
-    console.log("Running first check.");
-    let data = await scraper.getEvents({});
-    await dataHandler.insertEvents(data);
-    console.log("First check ran succesfully.");
+    if (refresh == -1)
+        return;
 
     setInterval(async () => {
         console.log("Interval check started.");

@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS `clubs` (
 CREATE TABLE IF NOT EXISTS `events` (
   `id` INT NOT NULL,
   `title` VARCHAR(255) NOT NULL,
-  `date` DATETIME(255) NOT NULL,
+  `event_date` DATETIME(255) NOT NULL,
   `location` VARCHAR(255) NOT NULL,
   `img` VARCHAR(255) NULL,
   PRIMARY KEY (`id`));

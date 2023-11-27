@@ -1,12 +1,19 @@
 import puppeteer from 'puppeteer';
 import { Club, EventData, RequestBody } from '../types.js';
 import DatabaseHander from './DatabaseHandler.js';
+import delay from '../helpers/delay.js';
 
 export default class ScraperHandler {
-    browser: puppeteer.Browser;
-    page: puppeteer.Page;
-    url = "https://valenciacollege.campuslabs.com/engage";
+    //Instance of a puppeteer browser.
+    private browser: puppeteer.Browser;
+    //The main Browser Page
+    private page: puppeteer.Page;
+    private readonly url = "https://valenciacollege.campuslabs.com/engage";
+    
+    //A shared instance of itself for convinient access throughout the project.
+    public static singelton: ScraperHandler;
 
+    //Starts the puppeteer browser
     public async startBrowser() {
         try {
             this.browser = await puppeteer.launch({ headless: "new" });
@@ -18,21 +25,39 @@ export default class ScraperHandler {
         console.log("Engage scraper started succesfully.");
     }
 
+    //Closes the puppeteer browser
+    public async closeBrowser() {
+        await this.browser.close();
+        this.page = null;
+    }
+
+    //Gets the events requested or the generic future events that auto refresh.
     public async getEvents(req: RequestBody, club?: string) {
         console.log("Getting events...");
 
         if (!this.page)
             await this.startBrowser();
 
-        await this.page.goto(`${this.url}/events`);
+        if (!club) {
+            await this.page.goto(`${this.url}/events`);
 
-        await this.page.waitForSelector('button > div > div > span');
+            await this.page.waitForSelector('button > div > div > span');
 
-        while (await this.page.$("button > div > div > span")) {
-            try {
+            while (await this.page.$("button > div > div > span")) {
+                try {
+                    await this.page.click("button > div > div > span");
+                } catch (error) {
+                    break;
+                }
+            }
+        }
+        else {
+            await this.page.goto(`${this.url}/organization/${club}/events`);
+            await this.page.waitForSelector('button > div > div > span');
+
+            if (req.pastEvents) {
                 await this.page.click("button > div > div > span");
-            } catch (error) {
-                break;
+                await delay(1500);
             }
         }
 
@@ -43,14 +68,10 @@ export default class ScraperHandler {
             console.log(`Event ${id} created.`);
         }
 
-        await this.browser.close();
-        this.page = null;
-
-        console.log(result);
-
         return result;
     }
 
+    //Filters for the event html elements that actually need to be checked.
     private async needsCheck() {
         const elements = await this.page.$$("a");
         const ids = await DatabaseHander.singelton.getIds();
@@ -71,6 +92,7 @@ export default class ScraperHandler {
         return result;
     }
 
+    //Collects data from a single event.
     private async checkEvent(id: number): Promise<EventData> {
         var event: EventData = {
             id: id,
@@ -111,7 +133,7 @@ export default class ScraperHandler {
                 club_id: href.match(/(?<=organization\/).*/gm)[0],
                 club_name: await el.$eval('h3', x => x.textContent.trim())
             };
-            
+
             event.clubs.push(club);
         }
 
