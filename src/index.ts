@@ -14,7 +14,7 @@ async function main() {
 
     //Initialize Handlers
     EngageScraper.singelton = new EngageScraper();
-    const scraper = new EngageScraper();
+    const scraper = EngageScraper.singelton;
 
     TaskQueueHandler.singelton = new TaskQueueHandler();
     const taskQueue = TaskQueueHandler.singelton;

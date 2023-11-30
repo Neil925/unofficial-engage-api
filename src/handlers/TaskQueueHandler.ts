@@ -40,8 +40,8 @@ export default class TaskQueueHandler {
         this.resolving = false;
         if (this.taskQueue.length)
             await this.processQueue();
-
-        await ScraperHandler.singelton.closeBrowser();
+        else
+            await ScraperHandler.singelton.closeBrowser();
     }
 
     /**

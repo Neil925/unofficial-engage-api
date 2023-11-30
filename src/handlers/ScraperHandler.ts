@@ -22,7 +22,7 @@ export default class ScraperHandler {
      * @type {string}
      */
     private readonly url = "https://valenciacollege.campuslabs.com/engage";
-    
+
     /**
      * A shared instance of ScraperHandler for convenient access throughout the project.
      * @type {ScraperHandler}
@@ -48,8 +48,13 @@ export default class ScraperHandler {
      * Closes the Puppeteer browser.
      */
     public async closeBrowser() {
+        if (!this.page || !this.browser)
+            return;
+
         await this.browser.close();
         this.page = null;
+
+        console.log("Browser succesfully closed.")
     }
 
     /**
@@ -102,7 +107,7 @@ export default class ScraperHandler {
      * @returns {Promise<number[]>} An array of event IDs that need to be checked.
      * @private
      */
-    private async needsCheck() {
+    private async needsCheck(): Promise<number[]> {
         const elements = await this.page.$$("a");
         const ids = await DatabaseHander.singelton.getIds();
         let result: number[] = [];

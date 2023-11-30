@@ -1,8 +1,8 @@
 //before and after are UTC SECONDS.
 export interface RequestBody {
     pastEvents?: boolean,
-    after?: Date,
-    before?: Date
+    after?: Number,
+    before?: Number
 }
 
 export interface EventData {

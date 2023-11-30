@@ -63,10 +63,10 @@ export default class DatabaseHander {
         return true;
     }
 
-     /**
-     * Inserts events into the database in bulk.
-     * @param {EventData[]} data - An array of EventData objects to be inserted.
-     */
+    /**
+    * Inserts events into the database in bulk.
+    * @param {EventData[]} data - An array of EventData objects to be inserted.
+    */
     public async insertEvents(data: EventData[]) {
         console.log(`Inserting ${data.length} events to database.`);
         for (const event of data) {
@@ -91,6 +91,9 @@ export default class DatabaseHander {
     public async queryEvents(request: RequestBody, club?: string): Promise<EventData[]> {
         let query = SQL`SELECT * FROM EVENTS_VIEW`;
 
+        if (club && request.pastEvents)
+            request.before = Date.now();
+
         let cond = 0;
 
         cond += club ? 1 : 0;
@@ -99,20 +102,18 @@ export default class DatabaseHander {
 
         query.append(`${cond ? " WHERE " : ';'}`);
 
-        if (club)
+        if (club) {
             query.append(`EXISTS (SELECT 1 FROM json_each(clubs) WHERE json_each.value LIKE '%${club}%')`);
+            query.append(cond > 1 ? ' AND ' : '');
+        }
 
-        query.append(`${cond > 1 ? ' AND ' : ''}`);
-        
-        if (request.after)
-        query.append(`event_date > ${request.after}`);
-
-        query.append(`${request.before ? " AND " : ';'}`);
+        if (request.after) {
+            query.append(`event_date > ${request.after}`);
+            query.append(request.before ? " AND " : ';');
+        }
 
         if (request.before)
             query.append(`event_date < ${request.before};`);
-
-        console.log(query);
 
         let result = await this.db.all(query);
 
