@@ -68,6 +68,10 @@ export default class ScraperHandler {
     req: RequestBody,
     club?: string,
   ): Promise<EventData[]> {
+    if (!this.page) {
+      throw new Error();
+    }
+
     console.log("Getting events...");
 
     if (!this.page) {
