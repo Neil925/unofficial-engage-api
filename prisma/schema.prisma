@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model clubs {
+  club_id          String             @id @unique
+  club_name        String?
+  events_has_clubs events_has_clubs[]
+}
+
+model events {
+  id               Int                          @id @unique
+  title            String
+  event_date       Int
+  location         String
+  img              String?
+  events_has_clubs events_has_clubs[]
+}
+
+model events_has_clubs {
+  events_id Int
+  club_id   String
+  clubs     clubs  @relation(fields: [club_id], references: [club_id], onDelete: NoAction, onUpdate: NoAction)
+  events    events @relation(fields: [events_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([events_id, club_id])
+  @@index([events_id], map: "fk_events_has_clubs_events_idx")
+  @@index([club_id], map: "fk_events_has_clubs_clubs1_idx")
+}
