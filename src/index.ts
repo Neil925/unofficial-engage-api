@@ -1,4 +1,8 @@
 import express from "express";
+import swaggerUi from "swagger-ui-express";
+
+import swaggerDocument from "./swagger.json" with { type: "json" };
+
 import EngageScraper from "./handlers/ScraperHandler.ts";
 import DatabaseHander from "./handlers/DatabaseHandler.ts";
 import TaskQueueHandler from "./handlers/TaskQueueHandler.ts";
@@ -32,13 +36,14 @@ async function main() {
     );
   }
 
-  if (!await dataHandler.initialize()) {
+  if (!dataHandler.initialize()) {
     throw Error("Database initilization failed.");
   }
 
   console.log("Database initialized succesfully.");
 
   app.use(express.json()); // for parsing application/json
+  app.use("/", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
   /**
    * Express route to return all events in the database.

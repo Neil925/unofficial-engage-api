@@ -1,0 +1,239 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Unofficial Engage API",
+    "version": "1.0.0",
+    "description": "API for retrieving and storing club event data."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local server"
+    }
+  ],
+  "paths": {
+    "/events": {
+      "get": {
+        "summary": "Get all events",
+        "description": "Retrieve all events from the database.",
+        "responses": {
+          "200": {
+            "description": "A list of events",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EventData"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error if pastEvents is present in request"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestBody"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{club}/events": {
+      "get": {
+        "summary": "Get events for a specific club",
+        "parameters": [
+          {
+            "name": "club",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A list of events for the club",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EventData"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{club}/members": {
+      "get": {
+        "summary": "Get members for a specific club (discontinued)",
+        "parameters": [
+          {
+            "name": "club",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Discontinued response",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Discontinued"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/prep/events": {
+      "post": {
+        "summary": "Scrape and insert all events",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Scraping started",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Invalid use of pastEvents"
+          }
+        }
+      }
+    },
+    "/prep/{club}/events": {
+      "post": {
+        "summary": "Scrape and insert events for a specific club",
+        "parameters": [
+          {
+            "name": "club",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Scraping started for club",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RequestBody": {
+        "type": "object",
+        "properties": {
+          "pastEvents": {
+            "type": "boolean"
+          },
+          "after": {
+            "type": "integer",
+            "description": "UTC seconds"
+          },
+          "before": {
+            "type": "integer",
+            "description": "UTC seconds"
+          }
+        }
+      },
+      "EventData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "location": {
+            "type": "string"
+          },
+          "img": {
+            "type": "string"
+          },
+          "clubs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Club"
+            }
+          }
+        }
+      },
+      "Club": {
+        "type": "object",
+        "properties": {
+          "club_id": {
+            "type": "string"
+          },
+          "club_name": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
