@@ -1,4 +1,4 @@
-import ScraperHandler from "./ScraperHandler.ts";
+import ScraperHandler from "./ScraperHandler.js";
 
 /**
  * TaskQueueHandler class manages a queue of tasks for webscraper.
@@ -56,4 +56,3 @@ export default class TaskQueueHandler {
     this.processQueue();
   }
 }
-

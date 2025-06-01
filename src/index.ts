@@ -1,11 +1,11 @@
 import express from "express";
 import swaggerUi from "swagger-ui-express";
 
-import swaggerDocument from "./swagger.json" with { type: "json" };
+import swaggerDocument from "../swagger.json" with { type: "json" };
 
-import EngageScraper from "./handlers/ScraperHandler.ts";
-import DatabaseHander from "./handlers/DatabaseHandler.ts";
-import TaskQueueHandler from "./handlers/TaskQueueHandler.ts";
+import EngageScraper from "./handlers/ScraperHandler.js";
+import DatabaseHander from "./handlers/DatabaseHandler.js";
+import TaskQueueHandler from "./handlers/TaskQueueHandler.js";
 
 /**
  * The main function that starts the application.
@@ -50,7 +50,7 @@ async function main() {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  app.get("/events", async (req, res) => {
+  app.get("/events", async (req: any, res) => {
     if (req.pastEvents) {
       res.status(500).send(
         "Past event checking is only valid for club routes!",
@@ -61,7 +61,7 @@ async function main() {
     res.send(await dataHandler.queryEvents(req.body));
   });
 
-  app.param("club", (req, res, next, value) => {
+  app.param("club", (req: any, res, next, value) => {
     req.club = value;
     next();
   });
@@ -73,7 +73,7 @@ async function main() {
    */
   app.get(
     "/:club/events",
-    async (req, res) => {
+    async (req: any, res) => {
       res.send(await dataHandler.queryEvents(req.body, req.club));
     },
   );
@@ -114,7 +114,7 @@ async function main() {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  app.post("/prep/:club/events", async (req, res) => {
+  app.post("/prep/:club/events", async (req: any, res) => {
     res.send("Club event data collection will now start.");
     console.log("Running club events prep.");
 

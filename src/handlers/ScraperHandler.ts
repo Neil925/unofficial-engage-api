@@ -1,7 +1,7 @@
 import puppeteer from "puppeteer";
-import DatabaseHander from "./DatabaseHandler.ts";
-import delay from "../helpers/delay.ts";
-import type { EventData, RequestBody } from "@/types.ts";
+import DatabaseHander from "./DatabaseHandler.js";
+import delay from "../helpers/delay.js";
+import type { Club, EventData, RequestBody } from "../types.js";
 
 /**
  * ScraperHandler class for pulling events from Engage using Puppeteer.
