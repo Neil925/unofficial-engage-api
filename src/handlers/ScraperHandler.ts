@@ -69,14 +69,14 @@ export default class ScraperHandler {
     club?: string,
   ): Promise<EventData[]> {
     if (!this.page) {
+      await this.startBrowser();
+    }
+
+    if (!this.page) {
       throw new Error();
     }
 
     console.log("Getting events...");
-
-    if (!this.page) {
-      await this.startBrowser();
-    }
 
     if (!club) {
       await this.page.goto(`${this.url}/events`);
