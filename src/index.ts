@@ -8,6 +8,8 @@ import EngageScraper from "./handlers/ScraperHandler.js";
 import DatabaseHander from "./handlers/DatabaseHandler.js";
 import TaskQueueHandler from "./handlers/TaskQueueHandler.js";
 
+const SECRET_KEY = process.env.SECRET_KEY;
+
 /**
  * The main function that starts the application.
  * Initializes all necessary variables and defines API paths.
@@ -56,7 +58,7 @@ async function main() {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  app.post("/events", async (req: any, res) => {
+  app.get("/events", async (req: any, res) => {
     if (req.pastEvents) {
       res.status(500).send(
         "Past event checking is only valid for club routes!",
@@ -64,10 +66,10 @@ async function main() {
       return;
     }
 
-    res.send(await dataHandler.queryEvents(req.body));
+    res.send(await dataHandler.queryEvents(req.params));
   });
 
-  app.param("club", (req: any, res, next, value) => {
+  app.param("club", (req: any, _res, next, value) => {
     req.club = value;
     next();
   });
@@ -77,10 +79,10 @@ async function main() {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  app.post(
+  app.get(
     "/:club/events",
     async (req: any, res) => {
-      res.send(await dataHandler.queryEvents(req.body, req.club));
+      res.send(await dataHandler.queryEvents(req.params, req.club));
     },
   );
 
@@ -89,7 +91,7 @@ async function main() {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  app.get("/:club/members", async (req, res) => {
+  app.get("/:club/members", async (_req, res) => {
     res.send("Discontinued");
   });
 
@@ -98,8 +100,8 @@ async function main() {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  app.post("/prep/events", async (req, res) => {
-    if (req.body.pastEvents) {
+  app.post("/prep/events", verifyBearerToken, async (req: any, res) => {
+    if (req.pastEvents) {
       res.status(500).send(
         "Past event checking is only valid for club routes!",
       );
@@ -120,11 +122,11 @@ async function main() {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  app.post("/prep/:club/events", async (req: any, res) => {
+  app.post("/prep/:club/events", verifyBearerToken, async (req: any, res) => {
     res.send("Club event data collection will now start.");
     console.log("Running club events prep.");
 
-    if (req.body.pastEvents) {
+    if (req.pastEvents) {
       console.log(`Checking for ${req.club}'s past events.`);
     }
 
@@ -153,6 +155,28 @@ async function main() {
     console.log("Interval check started.");
     await scraper.getEvents({});
   }, (1000 * 60 * 60 * 24) / refresh);
+}
+
+function verifyBearerToken(
+  req,
+  res,
+  next,
+) {
+  const authHeader = req.headers["authorization"];
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({
+      error: "Missing or invalid Authorization header",
+    });
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  if (token !== SECRET_KEY) {
+    return res.status(403).json({ error: "Invalid token" });
+  }
+
+  next();
 }
 
 main();
