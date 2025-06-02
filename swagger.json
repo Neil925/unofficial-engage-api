@@ -13,7 +13,7 @@
   ],
   "paths": {
     "/events": {
-      "get": {
+      "post": {
         "summary": "Get all events",
         "description": "Retrieve all events from the database.",
         "responses": {
@@ -46,7 +46,7 @@
       }
     },
     "/{club}/events": {
-      "get": {
+      "post": {
         "summary": "Get events for a specific club",
         "parameters": [
           {
@@ -85,7 +85,7 @@
       }
     },
     "/{club}/members": {
-      "get": {
+      "post": {
         "summary": "Get members for a specific club (discontinued)",
         "parameters": [
           {

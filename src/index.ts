@@ -43,14 +43,18 @@ async function main() {
   console.log("Database initialized succesfully.");
 
   app.use(express.json()); // for parsing application/json
-  app.use("/", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+  app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+  app.get("/", async (_req, res) => {
+    res.send("Hello!");
+  });
 
   /**
    * Express route to return all events in the database.
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  app.get("/events", async (req: any, res) => {
+  app.post("/events", async (req: any, res) => {
     if (req.pastEvents) {
       res.status(500).send(
         "Past event checking is only valid for club routes!",
@@ -71,7 +75,7 @@ async function main() {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  app.get(
+  app.post(
     "/:club/events",
     async (req: any, res) => {
       res.send(await dataHandler.queryEvents(req.body, req.club));
