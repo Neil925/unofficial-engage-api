@@ -1,5 +1,6 @@
 import express from "express";
 import swaggerUi from "swagger-ui-express";
+import cors from "cors";
 
 import swaggerDocument from "../swagger.json" with { type: "json" };
 
@@ -43,6 +44,7 @@ async function main() {
   console.log("Database initialized succesfully.");
 
   app.use(express.json()); // for parsing application/json
+  app.use(cors());
   app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
   app.get("/", async (_req, res) => {
