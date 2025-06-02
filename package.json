@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "node --env-file .env src/index.ts",
     "start": "node dist/index.js",
-    "build": "tsc"
+    "build": "prisma migrate deploy && tsc"
   },
   "keywords": [],
   "author": "",
