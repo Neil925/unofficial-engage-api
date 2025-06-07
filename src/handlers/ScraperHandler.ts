@@ -21,7 +21,8 @@ export default class ScraperHandler {
    * The base URL for the Engage website.
    * @type {string}
    */
-  private readonly url = "https://valenciacollege.campuslabs.com/engage";
+  private readonly url: string =
+    "https://valenciacollege.campuslabs.com/engage";
 
   /**
    * A shared instance of ScraperHandler for convenient access throughout the project.
@@ -181,9 +182,7 @@ export default class ScraperHandler {
       x.parentElement.querySelector("p").textContent
     );
 
-    let imageSelector = await this.page.$(
-      "aria/Image Uploaded for Event Cover Photo",
-    );
+    let imageSelector = await this.page.$("div[role=img]");
 
     event.img = await imageSelector?.evaluate((x) =>
       (x as HTMLDivElement)
