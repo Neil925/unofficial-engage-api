@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
-    "start": "puppeteer browsers install chrome && prisma migrate deploy && tsc && node dist/index.js"
+    "start": "prisma migrate deploy && tsc && node dist/index.js"
   },
   "keywords": [],
   "author": "",

@@ -36,7 +36,9 @@ export default class ScraperHandler {
    */
   public async startBrowser() {
     try {
-      this.browser = await puppeteer.launch({ headless: true });
+      this.browser = await puppeteer.launch({
+        browserWSEndpoint: "wss://chrome.browserless.io/",
+      });
       this.page = await this.browser.newPage();
     } catch (error) {
       throw new Error(`Scraper initialization failed: ${error}`);
